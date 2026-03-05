@@ -1,3 +1,10 @@
 {
+<<<<<<< HEAD
   "buildCommand": "npm install && npm run build"
+=======
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
+>>>>>>> 74846f0b1cc1d1abce17e573816f3259ddfaecfc
 }
