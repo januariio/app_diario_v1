@@ -15,6 +15,7 @@ import Historico from "./pages/Historico";
 import FechamentoMes from "./pages/FechamentoMes";
 import Perfil from "./pages/Perfil";
 import Resumos from "./pages/Resumos";
+import Veiculos from "./pages/Veiculos";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Truck } from "lucide-react";
@@ -55,6 +56,7 @@ function AppRoutes() {
             <Route path="/fechamento" element={<FechamentoMes />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/resumos" element={<Resumos />} />
+            <Route path="/veiculos" element={<Veiculos />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MobileLayout>

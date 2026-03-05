@@ -44,6 +44,11 @@ async function fetchProfile(userId: string): Promise<UserProfile | null> {
     tipo_combustivel: data.tipo_combustivel ?? 'Diesel S10',
     comissao: data.comissao ?? undefined,
     eixos: data.eixos ?? 6,
+    documento: data.documento ?? undefined,
+    tipo_perfil: data.tipo_perfil ?? 'motorista',
+    veiculo_pendente: data.veiculo_pendente ?? false,
+    veiculo_modelo: data.veiculo_modelo ?? undefined,
+    veiculo_placa: data.veiculo_placa ?? undefined,
   };
 }
 
@@ -62,6 +67,8 @@ async function ensureProfile(user: User): Promise<UserProfile | null> {
     tipo_combustivel: 'Diesel S10',
     comissao: meta.comissao ?? null,
     eixos: meta.eixos ?? 6,
+    documento: meta.documento ?? null,
+    tipo_perfil: meta.tipo_perfil ?? 'motorista',
   });
 
   if (error) return null;
@@ -125,6 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           media_km_litro: profileData.media_km_litro,
           comissao: profileData.comissao ?? null,
           eixos: profileData.eixos ?? 6,
+          documento: profileData.documento ?? null,
+          tipo_perfil: profileData.tipo_perfil ?? 'motorista',
         },
       },
     });
@@ -170,6 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         media_km_litro: data.media_km_litro,
         comissao: data.comissao ?? null,
         eixos: data.eixos ?? 6,
+        documento: data.documento ?? null,
+        tipo_perfil: data.tipo_perfil ?? 'motorista',
       })
       .eq('id', state.user.id);
 

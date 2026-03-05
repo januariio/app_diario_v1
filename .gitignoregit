@@ -1,0 +1,1 @@
+node_modules/  .env  dist/  rm -r --cached node_modules  rm --cached .env  add .git commit -m "deploy setup"git remote add origin https://github.com/januariio/app_diario_v1.gitgit push -u origin main

@@ -3,16 +3,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Truck, LogIn, UserPlus, Mail } from 'lucide-react';
+import { Truck, LogIn, UserPlus, Mail, ChevronLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { TipoPerfil } from '@/types';
 
-type Tab = 'login' | 'cadastro';
+type Tab = 'login' | 'tipo' | 'cadastro';
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
   const [tab, setTab] = useState<Tab>('login');
   const [loading, setLoading] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [tipoPerfil, setTipoPerfil] = useState<TipoPerfil | null>(null);
 
   const [loginForm, setLoginForm] = useState({ email: '', senha: '' });
   const [cadastroForm, setCadastroForm] = useState({
@@ -20,10 +22,8 @@ export default function AuthPage() {
     email: '',
     senha: '',
     whatsapp: '',
-    modelo_caminhao: '',
-    media_km_litro: '2.5',
+    documento: '',
     comissao: '',
-    eixos: '6',
   });
 
   const handleLogin = async () => {
@@ -42,8 +42,8 @@ export default function AuthPage() {
   };
 
   const handleCadastro = async () => {
-    const { nome, email, senha, modelo_caminhao, media_km_litro } = cadastroForm;
-    if (!nome || !email || !senha || !modelo_caminhao) {
+    const { nome, email, senha } = cadastroForm;
+    if (!nome || !email || !senha) {
       toast.error('Preencha todos os campos obrigatórios.');
       return;
     }
@@ -56,10 +56,14 @@ export default function AuthPage() {
       nome,
       email,
       whatsapp: cadastroForm.whatsapp,
-      modelo_caminhao,
-      media_km_litro: parseFloat(media_km_litro) || 2.5,
-      comissao: cadastroForm.comissao ? parseFloat(cadastroForm.comissao) : undefined,
-      eixos: parseInt(cadastroForm.eixos) || 6,
+      documento: cadastroForm.documento || undefined,
+      tipo_perfil: tipoPerfil ?? 'motorista',
+      modelo_caminhao: 'Não informado',
+      media_km_litro: 2.5,
+      tipo_combustivel: 'Diesel S10',
+      comissao: tipoPerfil === 'motorista' && cadastroForm.comissao
+        ? parseFloat(cadastroForm.comissao)
+        : undefined,
     });
     setLoading(false);
     if (error) {
@@ -77,6 +81,7 @@ export default function AuthPage() {
   const updateCadastro = (field: string, value: string) =>
     setCadastroForm(prev => ({ ...prev, [field]: value }));
 
+  // Tela de confirmação de email
   if (confirmationEmail) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center bg-background px-4 py-8">
@@ -85,9 +90,7 @@ export default function AuthPage() {
             <Mail className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Verifique seu email</h1>
-          <p className="text-muted-foreground">
-            Enviamos um link de confirmação para
-          </p>
+          <p className="text-muted-foreground">Enviamos um link de confirmação para</p>
           <p className="font-semibold text-foreground">{confirmationEmail}</p>
           <p className="text-sm text-muted-foreground">
             Clique no link do email para ativar sua conta, depois volte aqui para fazer login.
@@ -121,29 +124,31 @@ export default function AuthPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex rounded-lg bg-card border border-border overflow-hidden mb-6">
-        <button
-          onClick={() => setTab('login')}
-          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
-            tab === 'login'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Entrar
-        </button>
-        <button
-          onClick={() => setTab('cadastro')}
-          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
-            tab === 'cadastro'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Cadastrar
-        </button>
-      </div>
+      {/* Tabs Login / Cadastro */}
+      {tab !== 'cadastro' && (
+        <div className="flex rounded-lg bg-card border border-border overflow-hidden mb-6">
+          <button
+            onClick={() => setTab('login')}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              tab === 'login'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Entrar
+          </button>
+          <button
+            onClick={() => setTab('tipo')}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              tab === 'tipo'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Cadastrar
+          </button>
+        </div>
+      )}
 
       {/* Login Form */}
       {tab === 'login' && (
@@ -168,36 +173,96 @@ export default function AuthPage() {
               className="mt-1 h-12"
             />
           </div>
-          <Button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full h-12 text-base font-bold mt-2"
-          >
+          <Button onClick={handleLogin} disabled={loading} className="w-full h-12 text-base font-bold mt-2">
             <LogIn className="h-5 w-5 mr-2" />
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
           <p className="text-center text-sm text-muted-foreground mt-4">
             Não tem conta?{' '}
-            <button onClick={() => setTab('cadastro')} className="text-primary font-semibold hover:underline">
+            <button onClick={() => setTab('tipo')} className="text-primary font-semibold hover:underline">
               Cadastre-se
             </button>
           </p>
         </div>
       )}
 
-      {/* Cadastro Form */}
+      {/* Etapa 1: Escolha o tipo de perfil */}
+      {tab === 'tipo' && (
+        <div className="space-y-4 animate-slide-up">
+          <div className="text-center mb-2">
+            <h2 className="text-lg font-bold">Como você vai usar o app?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Selecione o seu perfil para continuar</p>
+          </div>
+
+          <button
+            onClick={() => { setTipoPerfil('motorista'); setTab('cadastro'); }}
+            className="flex w-full items-start gap-4 rounded-xl border border-border bg-card p-4 hover:border-primary transition-colors text-left"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+              <Truck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-bold text-foreground">Motorista</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Trabalha para uma transportadora ou autônomo com comissão por frete
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => { setTipoPerfil('frota'); setTab('cadastro'); }}
+            className="flex w-full items-start gap-4 rounded-xl border border-border bg-card p-4 hover:border-primary transition-colors text-left"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-bold text-foreground">Frota / Autônomo</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Dono do caminhão, autônomo ou gestor de frota
+              </p>
+            </div>
+          </button>
+
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            Já tem conta?{' '}
+            <button onClick={() => setTab('login')} className="text-primary font-semibold hover:underline">
+              Entrar
+            </button>
+          </p>
+        </div>
+      )}
+
+      {/* Etapa 2: Formulário de cadastro */}
       {tab === 'cadastro' && (
         <div className="space-y-4 animate-slide-up">
+          {/* Header com tipo selecionado */}
+          <div className="flex items-center gap-3 mb-2">
+            <button
+              onClick={() => setTab('tipo')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h2 className="text-base font-bold">
+                {tipoPerfil === 'motorista' ? '🚛 Motorista' : '🏢 Frota / Autônomo'}
+              </h2>
+              <p className="text-xs text-muted-foreground">Preencha seus dados para criar a conta</p>
+            </div>
+          </div>
+
           <div>
             <Label>Nome *</Label>
             <Input
               type="text"
-              placeholder="Seu nome"
+              placeholder="Seu nome completo"
               value={cadastroForm.nome}
               onChange={e => updateCadastro('nome', e.target.value)}
               className="mt-1 h-12"
             />
           </div>
+
           <div>
             <Label>Email *</Label>
             <Input
@@ -208,6 +273,7 @@ export default function AuthPage() {
               className="mt-1 h-12"
             />
           </div>
+
           <div>
             <Label>Senha *</Label>
             <Input
@@ -218,6 +284,7 @@ export default function AuthPage() {
               className="mt-1 h-12"
             />
           </div>
+
           <div>
             <Label>WhatsApp</Label>
             <Input
@@ -228,67 +295,42 @@ export default function AuthPage() {
               className="mt-1 h-12"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div>
+            <Label>CPF / CNPJ</Label>
+            <Input
+              type="text"
+              placeholder="000.000.000-00 ou 00.000.000/0001-00"
+              value={cadastroForm.documento}
+              onChange={e => updateCadastro('documento', e.target.value)}
+              className="mt-1 h-12"
+            />
+          </div>
+
+          {/* Comissão só para motorista */}
+          {tipoPerfil === 'motorista' && (
             <div>
-              <Label>Modelo Caminhão *</Label>
-              <Input
-                type="text"
-                placeholder="Scania R450"
-                value={cadastroForm.modelo_caminhao}
-                onChange={e => updateCadastro('modelo_caminhao', e.target.value)}
-                className="mt-1 h-12"
-              />
-            </div>
-            <div>
-              <Label>Média (km/L)</Label>
+              <Label>Comissão (%) <span className="text-muted-foreground font-normal">— opcional</span></Label>
               <Input
                 type="number"
                 inputMode="decimal"
-                placeholder="2.5"
-                value={cadastroForm.media_km_litro}
-                onChange={e => updateCadastro('media_km_litro', e.target.value)}
+                placeholder="Ex: 10"
+                value={cadastroForm.comissao}
+                onChange={e => updateCadastro('comissao', e.target.value)}
                 className="mt-1 h-12"
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Percentual de comissão sobre o valor do frete.
+              </p>
             </div>
-          </div>
-          <div>
-            <Label>Comissão (%) <span className="text-muted-foreground font-normal">— opcional</span></Label>
-            <Input
-              type="number"
-              inputMode="decimal"
-              placeholder="Ex: 10"
-              value={cadastroForm.comissao}
-              onChange={e => updateCadastro('comissao', e.target.value)}
-              className="mt-1 h-12"
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Percentual de comissão sobre o frete, se aplicável.
-            </p>
-          </div>
-          <div>
-            <Label>Quantidade de Eixos *</Label>
-            <select
-              value={cadastroForm.eixos}
-              onChange={e => updateCadastro('eixos', e.target.value)}
-              className="mt-1 h-12 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {[2,3,4,5,6,7,8,9].map(n => (
-                <option key={n} value={n}>{n} eixos</option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Usado para calcular pedágio no simulador.
-            </p>
-          </div>
-          <Button
-            onClick={handleCadastro}
-            disabled={loading}
-            className="w-full h-12 text-base font-bold mt-2"
-          >
+          )}
+
+          <Button onClick={handleCadastro} disabled={loading} className="w-full h-12 text-base font-bold mt-2">
             <UserPlus className="h-5 w-5 mr-2" />
             {loading ? 'Cadastrando...' : 'Criar Conta'}
           </Button>
-          <p className="text-center text-sm text-muted-foreground mt-4">
+
+          <p className="text-center text-sm text-muted-foreground">
             Já tem conta?{' '}
             <button onClick={() => setTab('login')} className="text-primary font-semibold hover:underline">
               Entrar
