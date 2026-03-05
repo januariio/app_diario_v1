@@ -1,16 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string || '').trim();
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string || '').trim();
 
-console.log('[Supabase] URL:', supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'VAZIO');
-console.log('[Supabase] KEY:', supabaseAnonKey ? 'OK' : 'VAZIO');
+console.log('[Supabase] URL completa:', JSON.stringify(supabaseUrl));
+console.log('[Supabase] KEY length:', supabaseAnonKey.length);
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('[Supabase] Variáveis de ambiente não encontradas!');
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
