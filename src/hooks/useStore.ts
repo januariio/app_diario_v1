@@ -114,9 +114,10 @@ export function useStore(userId: string) {
     }
 
     // Filtra localmente pelo documento (ignora pontuação) e tipo
+    // tipo_perfil !== 'frota' cobre tanto 'motorista' quanto NULL (dados legados)
     const motorista = (todos ?? []).find(p => {
       const docP = (p.documento ?? '').replace(/[.\-\/]/g, '').trim();
-      return docP === docLimpo && p.tipo_perfil === 'motorista';
+      return docP === docLimpo && p.tipo_perfil !== 'frota';
     });
 
     if (!motorista) {

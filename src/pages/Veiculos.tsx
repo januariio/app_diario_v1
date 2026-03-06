@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/StoreContext';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,11 +18,13 @@ type DialogTipo = 'cadastro' | 'vincular' | 'historico' | null;
 
 export default function Veiculos() {
   const navigate = useNavigate();
-  const { veiculos, addVeiculo, updateVeiculo, vincularMotorista, viagens, despesas, abastecimentos } = useAppStore();
+  const { veiculos, addVeiculo, updateVeiculo, vincularMotorista, viagens, despesas } = useAppStore();
 
   const [dialogTipo, setDialogTipo] = useState<DialogTipo>(null);
   const [veiculoSelecionado, setVeiculoSelecionado] = useState<Veiculo | null>(null);
   const [loading, setLoading] = useState(false);
+  const [driverAbastecimentos, setDriverAbastecimentos] = useState<any[]>([]);
+  const [loadingAbast, setLoadingAbast] = useState(false);
 
   // Form cadastro
   const [form, setForm] = useState({
@@ -72,6 +75,23 @@ export default function Veiculos() {
         setMotoristaVinculado(null);
         setDialogTipo(null);
       }, 2000);
+    }
+  };
+
+  const handleOpenHistorico = async (v: Veiculo) => {
+    setVeiculoSelecionado(v);
+    setDriverAbastecimentos([]);
+    setDialogTipo('historico');
+    if (v.motorista_id) {
+      setLoadingAbast(true);
+      const { data } = await supabase
+        .from('abastecimentos')
+        .select('*')
+        .eq('user_id', v.motorista_id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      setDriverAbastecimentos(data ?? []);
+      setLoadingAbast(false);
     }
   };
 
@@ -151,7 +171,7 @@ export default function Veiculos() {
                   {v.motorista_nome ? 'Alterar' : 'Vincular'} motorista
                 </button>
                 <button
-                  onClick={() => { setVeiculoSelecionado(v); setDialogTipo('historico'); }}
+                  onClick={() => handleOpenHistorico(v)}
                   className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                 >
                   <History className="h-3.5 w-3.5" />
@@ -313,11 +333,13 @@ export default function Veiculos() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Abastecimentos recentes
                   </p>
-                  {abastecimentos.length === 0 ? (
+                  {loadingAbast ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
+                  ) : driverAbastecimentos.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">Nenhum abastecimento</p>
                   ) : (
                     <div className="space-y-2">
-                      {abastecimentos.slice(0, 10).map(a => (
+                      {driverAbastecimentos.map(a => (
                         <div key={a.id} className="rounded-lg border border-border bg-card p-3 text-sm">
                           <div className="flex justify-between">
                             <span className="font-medium">{a.cidade}</span>

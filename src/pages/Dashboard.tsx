@@ -45,8 +45,13 @@ export default function Dashboard() {
       supabase.from('viagens').select('*').in('user_id', motoristaIds),
       supabase.from('despesas').select('*').in('user_id', motoristaIds),
     ]).then(([v, d]) => {
+      if (v.error) console.error('[Frota] Erro ao carregar viagens:', v.error);
+      if (d.error) console.error('[Frota] Erro ao carregar despesas:', d.error);
       setFrotaViagens(v.data ?? []);
       setFrotaDespesas(d.data ?? []);
+      setFrotaLoading(false);
+    }).catch(err => {
+      console.error('[Frota] Erro de rede ao carregar dados:', err);
       setFrotaLoading(false);
     });
   }, [veiculos, isMotorista]);

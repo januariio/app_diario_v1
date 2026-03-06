@@ -1,5 +1,6 @@
 -- Execute este SQL no Supabase SQL Editor para criar a tabela de perfis
 -- e o trigger que cria o perfil automaticamente ao cadastrar
+-- NOTA: Use supabase_frota_rls.sql para configurar as permissões de frota
 
 -- 1. Tabela de perfis
 create table if not exists profiles (
@@ -14,6 +15,11 @@ create table if not exists profiles (
 );
 
 alter table profiles enable row level security;
+
+-- Políticas com DROP IF EXISTS para evitar erro ao re-executar
+drop policy if exists "Usuários podem ver próprio perfil" on profiles;
+drop policy if exists "Usuários podem atualizar próprio perfil" on profiles;
+drop policy if exists "Usuários podem inserir próprio perfil" on profiles;
 
 create policy "Usuários podem ver próprio perfil"
   on profiles for select
